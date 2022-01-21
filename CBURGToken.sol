@@ -32,11 +32,11 @@ contract CBURGToken is ERC20Capped, Ownable {
     mapping(address => bool) public whitelistAddresses;
 
     constructor(address rewardsWallet_)
-        ERC20("BURG2 Token", "BURG2")
+        ERC20("CBURG Token", "CBURG")
         ERC20Capped(100 * 1e6 * 1e18)
     {
-        _mint(0x2C260699603E31593fB66E6D6Cd0De5D8148c7c5, 50 * 1e6 * 1e18); // 50M Play to earn
-        //!!! _mint(0x62Eb4E8C1629feD1eF5f93f15e69233157B64E1A, 50 * 1e6 * 1e18); // 50M Play to earn
+        // _mint(0x2C260699603E31593fB66E6D6Cd0De5D8148c7c5, 50 * 1e6 * 1e18);
+        _mint(0x62Eb4E8C1629feD1eF5f93f15e69233157B64E1A, 50 * 1e6 * 1e18); // 50M Play to earn
         _mint(0xeBb7e8B99D4C7f0d20370fA4325B0d5506aDd665, 12 * 1e6 * 1e18); // Team
         _mint(0xeF884E379dB4121E44998875075a232149da3461, 10 * 1e6 * 1e18); // Public Sale
         _mint(0x3043a13DF5d6D4350279Ea75b561C47D769d18DA, 8 * 1e6 * 1e18); // Liquidity
@@ -54,9 +54,12 @@ contract CBURGToken is ERC20Capped, Ownable {
         setPermissions();
     }
 
+    /*
+    function to add some wallets (Play to earn, team, ...) to a whitelist to allow lock tokens in DxLock when antiwhate is set to 0
+    */
     function setPermissions() internal {
         changeWhitelistAddress(
-            0xeBb7e8B99D4C7f0d20370fA4325B0d5506aDd665, //OK
+            0xeBb7e8B99D4C7f0d20370fA4325B0d5506aDd665,
             true
         );
         changeWhitelistAddress(
@@ -87,9 +90,11 @@ contract CBURGToken is ERC20Capped, Ownable {
             0x7C8449230A7D1857619612F9B0C00169732b524f,
             true
         );
-
     }
 
+    /*
+    Openzeppelin hook to check if is a whale or not
+    */
     function _beforeTokenTransfer(
         address _from,
         address _to,
@@ -100,17 +105,26 @@ contract CBURGToken is ERC20Capped, Ownable {
         require(!isWhale(_from, _to, _amount), "AntiWhale");
     }
 
-    // ANTIWHALE MAX TRANSACTION
+    /*
+    function to activate antiWhale
+    */
     function activateAntiWhale() public onlyOwner {
         require(antiWhaleActivated == false);
         antiWhaleActivated = true;
     }
 
+    /*
+    function to deactivate antiWhale
+    */
     function deActivateAntiWhale() public onlyOwner {
         require(antiWhaleActivated == true);
         antiWhaleActivated = false;
     }
 
+    /*
+    function to set antiWhale.  Requires startDate, endDate, limitWhale (amount)
+    and sets antiWhaleActivated to true
+    */
     function setAntiWhale(
         uint256 _startDate,
         uint256 _endDate,
@@ -122,6 +136,9 @@ contract CBURGToken is ERC20Capped, Ownable {
         antiWhaleActivated = true;
     }
 
+    /*
+    function to change rewardsWallet variable
+    */
     function changeRewardsWalletAddress(address _newAddress)
         external
         onlyOwner
@@ -129,6 +146,10 @@ contract CBURGToken is ERC20Capped, Ownable {
         rewardsWallet = _newAddress;
     }
 
+    /*
+    function that checks if a transfer can be done.
+    If antiWhale is activated, only allow tranfers if an address is whiteListed, or if the amount is less than limitWhale, or any transfer from the rewardsWallet.
+    */
     function isWhale(
         address _from,
         address _to,
@@ -152,6 +173,9 @@ contract CBURGToken is ERC20Capped, Ownable {
         return false;
     }
 
+    /*
+    function to enable or disable an address of the whitelistAddresses mapping
+    */
     function changeWhitelistAddress(address _address, bool _allowed)
         public
         onlyOwner
