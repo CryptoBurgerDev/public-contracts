@@ -28,7 +28,7 @@ contract Bridge is
 
     bool public isInitialized;
 
-    address public BURGTokenAddress;
+    address public CBURGTokenAddress;
     address public backendBridgeWalletAddress1;
     address public backendBridgeWalletAddress2;
     address public oracleContractAddress;
@@ -37,7 +37,7 @@ contract Bridge is
 
     event EventBSCToGameExecuted(
         address indexed walletOfUser,
-        uint256 amountInBURG,
+        uint256 amountInCBURG,
         uint256 amountInDollars,
         uint256 nonce,
         uint256 timestamp
@@ -45,7 +45,7 @@ contract Bridge is
 
     event EventGameToBSCExecuted(
         address indexed walletOfUser,
-        uint256 amountInBURG,
+        uint256 amountInCBURG,
         uint256 amountInDollars,
         uint256 nonce,
         uint256 timestamp
@@ -53,15 +53,18 @@ contract Bridge is
 
     constructor() initializer {}
 
+    /*
+    function to initialize contract
+    */
     function initialize(
-        address BURGTokenAddress_,
+        address CBURGTokenAddress_,
         address backendBridgeWalletAddress1_,
         address backendBridgeWalletAddress2_,
         address oracleContractAddress_,
         address rewardsWallet_
     ) public initializer {
         __Ownable_init();
-        BURGTokenAddress = BURGTokenAddress_;
+        CBURGTokenAddress = CBURGTokenAddress_;
 
         backendBridgeWalletAddress1 = backendBridgeWalletAddress1_;
         backendBridgeWalletAddress2 = backendBridgeWalletAddress2_;
@@ -71,38 +74,40 @@ contract Bridge is
         isInitialized = true;
     }
 
-    function bridgeBSCToGame(uint256 _amountInBURG)
+    /*
+    function to send tokens from msg.sender to rewardsWallet
+    */
+    function bridgeBSCToGame(uint256 _amountInCBURG)
         external
         whenNotPaused
         nonReentrant
         returns (bool)
     {
-        // 1.-  Checkear allowance para gastar sus BURG en el front
-
         uint256 _amountInDollars = (Oracle(oracleContractAddress)
-            .priceBURGInDollars() * _amountInBURG) / 1e18;
+            .priceCBURGInDollars() * _amountInCBURG) / 1e18;
 
-        IERC20Upgradeable(BURGTokenAddress).safeTransferFrom(
+        IERC20Upgradeable(CBURGTokenAddress).safeTransferFrom(
             msg.sender,
             rewardsWallet,
-            _amountInBURG
+            _amountInCBURG
         );
 
         nonce = nonce + 1;
 
         emit EventBSCToGameExecuted(
             msg.sender,
-            _amountInBURG,
+            _amountInCBURG,
             _amountInDollars,
             nonce,
             block.timestamp
         );
 
-        // 3.-  Escuchar con pastEvents y procesar en el backend para actualizar la información.
-
         return true;
     }
 
+    /*
+    function to send tokens rewardsWallet to _walletOfUser
+    */
     function bridgeGameToBSC(
         address[] memory _walletOfUser,
         uint256[] memory _amountInDollars
@@ -113,27 +118,24 @@ contract Bridge is
             "Not allowed"
         );
 
-        // 1.-  Descontar en el backend directamente y anotas en la tabla de transacciones
-
-        // 2.-  Transferir
         for (uint256 index = 0; index < _walletOfUser.length; index++) {
-            uint256 _amountInBURG = (
-                Oracle(oracleContractAddress).getDollarsInBURG(
+            uint256 _amountInCBURG = (
+                Oracle(oracleContractAddress).getDollarsInCBURG(
                     _amountInDollars[index]
                 )
             );
 
-            IERC20Upgradeable(BURGTokenAddress).safeTransferFrom(
+            IERC20Upgradeable(CBURGTokenAddress).safeTransferFrom(
                 rewardsWallet,
                 _walletOfUser[index],
-                _amountInBURG
+                _amountInCBURG
             );
 
             nonce = nonce + 1;
 
             emit EventGameToBSCExecuted(
                 _walletOfUser[index],
-                _amountInBURG,
+                _amountInCBURG,
                 _amountInDollars[index],
                 nonce,
                 block.timestamp
@@ -141,6 +143,21 @@ contract Bridge is
         }
     }
 
+    /*
+    function to change address of the CBURG token
+    */
+    function changeCBURGTokenAddress(address _newAddress)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        CBURGTokenAddress = _newAddress;
+        return true;
+    }
+
+    /*
+    function to change backend wallet address 1
+    */
     function changeBackendBridgeWalletAddress1(address _newAddress)
         external
         onlyOwner
@@ -150,6 +167,9 @@ contract Bridge is
         return true;
     }
 
+    /*
+    function to change backend wallet address 2
+    */
     function changeBackendBridgeWalletAddress2(address _newAddress)
         external
         onlyOwner
@@ -159,6 +179,9 @@ contract Bridge is
         return true;
     }
 
+    /*
+    function to change Oracle contract address
+    */
     function changeOracleContractAddress(address _newAddress)
         external
         onlyOwner
@@ -168,6 +191,9 @@ contract Bridge is
         return true;
     }
 
+    /*
+    function to change rewards wallet address
+    */
     function changeRewardsWalletAddress(address _newAddress)
         external
         onlyOwner
@@ -177,11 +203,18 @@ contract Bridge is
         return true;
     }
 
+    /*
+    function to pause the contract
+    */
     function pauseContract() external onlyOwner {
         _pause();
     }
 
+    /*
+    function to unpause the contract
+    */
     function unpauseContract() external onlyOwner {
         _unpause();
     }
 }
+
