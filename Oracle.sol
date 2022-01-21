@@ -12,44 +12,53 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract Oracle is OwnableUpgradeable {
     bool public isInitialized;
-    uint256 public priceBURGInDollars;
+    uint256 public priceCBURGInDollars;
     uint256 public priceBNBInDollars;
     address public backendOracleWalletAddress;
 
-    event PriceBURGChanged(uint256 newPrice);
+    event PriceCBURGChanged(uint256 newPrice);
     event PriceBNBChanged(uint256 newPrice);
-    event PriceBURGAndBNBChanged(uint256 newPriceBURG, uint256 newPriceBNB);
+    event PriceCBURGAndBNBChanged(uint256 newPriceCBURG, uint256 newPriceBNB);
 
     constructor() initializer {}
 
-    function initialize()
-        public
-        initializer
-    {
+    /*
+    function to initialize contract
+    */
+    function initialize() public initializer {
         __Ownable_init();
-        priceBURGInDollars = 5 * 1e17;
+        priceCBURGInDollars = 5 * 1e17;
         priceBNBInDollars = 500 * 1e18;
         backendOracleWalletAddress = 0xe384b4F158a633EF600246B3Ee6Ee4Da9d99B829;
         isInitialized = true;
     }
 
-    function setBURGPriceInDollars(uint256 _newPriceDollars) external {
+    /*
+    function to set the price of the CBURG in dollars
+    */
+    function setCBURGPriceInDollars(uint256 _newPriceDollars) external {
         require(
             msg.sender == owner() || msg.sender == backendOracleWalletAddress,
             "Not allowed"
         );
-        priceBURGInDollars = _newPriceDollars;
-        emit PriceBURGChanged(_newPriceDollars);
+        priceCBURGInDollars = _newPriceDollars;
+        emit PriceCBURGChanged(_newPriceDollars);
     }
 
-    function getDollarsInBURG(uint256 _amountBURG)
+    /*
+    function to get how many CBURG are _amountInDollars amount
+    */
+    function getDollarsInCBURG(uint256 _amountInDollars)
         external
         view
         returns (uint256)
     {
-        return (_amountBURG * 1e18) / priceBURGInDollars;
+        return (_amountInDollars * 1e18) / priceCBURGInDollars;
     }
 
+    /*
+    function to set BNB price in dollars
+    */
     function setBNBPriceInDollars(uint256 _newPriceDollars) external {
         require(
             msg.sender == owner() || msg.sender == backendOracleWalletAddress,
@@ -59,27 +68,36 @@ contract Oracle is OwnableUpgradeable {
         emit PriceBNBChanged(_newPriceDollars);
     }
 
-    function getDollarsInBNB(uint256 _amountBURG)
+    /*
+    function to get how many BNB are _amountDollars amount
+    */
+    function getDollarsInBNB(uint256 _amountDollars)
         external
         view
         returns (uint256)
     {
-        return (_amountBURG * 1e18) / priceBNBInDollars;
+        return (_amountDollars * 1e18) / priceBNBInDollars;
     }
 
-    function setBURGAndBNBPriceInDollars(
-        uint256 _newPriceBURG,
+    /*
+    function to set CBURG and BNB price in dollars
+    */
+    function setCBURGAndBNBPriceInDollars(
+        uint256 _newPriceCBURG,
         uint256 _newPriceBNB
     ) external {
         require(
             msg.sender == owner() || msg.sender == backendOracleWalletAddress,
             "Not allowed"
         );
-        priceBURGInDollars = _newPriceBURG;
+        priceCBURGInDollars = _newPriceCBURG;
         priceBNBInDollars = _newPriceBNB;
-        emit PriceBURGAndBNBChanged(_newPriceBURG, _newPriceBNB);
+        emit PriceCBURGAndBNBChanged(_newPriceCBURG, _newPriceBNB);
     }
 
+    /*
+    function to change the address of backendOracleWalletAddress
+    */
     function changebackendOracleWalletAddress(address _newAddress)
         external
         onlyOwner
