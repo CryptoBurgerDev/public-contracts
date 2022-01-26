@@ -1,48 +1,38 @@
-/*
-CRYPTOBURGERS
-Web: https://cryptoburgers.io
-Telegram: https://t.me/cryptoburgersnft
-*/
-
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract Oracle is OwnableUpgradeable {
     bool public isInitialized;
-    uint256 public priceCBURGInDollars;
-    uint256 public priceBNBInDollars;
-    address public backendOracleWalletAddress;
-
-    event PriceCBURGChanged(uint256 newPrice);
-    event PriceBNBChanged(uint256 newPrice);
-    event PriceCBURGAndBNBChanged(uint256 newPriceCBURG, uint256 newPriceBNB);
+    address routerAddress;
+    address[] public path_BURG_BNB_BUSD;
 
     constructor() initializer {}
 
     /*
     function to initialize contract
     */
-    function initialize() public initializer {
+    function initialize(
+        address routerAddress_,
+        address[] memory path_BURG_BNB_BUSD_
+    ) public initializer {
         __Ownable_init();
-        priceCBURGInDollars = 5 * 1e17;
-        priceBNBInDollars = 500 * 1e18;
-        backendOracleWalletAddress = 0xe384b4F158a633EF600246B3Ee6Ee4Da9d99B829;
+
+        path_BURG_BNB_BUSD = path_BURG_BNB_BUSD_;
+        routerAddress = routerAddress_;
         isInitialized = true;
     }
 
     /*
-    function to set the price of the CBURG in dollars
+    function to get price of BURG in BSUD from router
     */
-    function setCBURGPriceInDollars(uint256 _newPriceDollars) external {
-        require(
-            msg.sender == owner() || msg.sender == backendOracleWalletAddress,
-            "Not allowed"
-        );
-        priceCBURGInDollars = _newPriceDollars;
-        emit PriceCBURGChanged(_newPriceDollars);
+    function priceCBURGInDollars() public view returns (uint256) {
+        uint256[] memory amounts = IUniswapV2Router02(routerAddress)
+            .getAmountsOut(1000000000000000000000, path_BURG_BNB_BUSD);
+        return amounts[2];
     }
 
     /*
@@ -53,57 +43,6 @@ contract Oracle is OwnableUpgradeable {
         view
         returns (uint256)
     {
-        return (_amountInDollars * 1e18) / priceCBURGInDollars;
-    }
-
-    /*
-    function to set BNB price in dollars
-    */
-    function setBNBPriceInDollars(uint256 _newPriceDollars) external {
-        require(
-            msg.sender == owner() || msg.sender == backendOracleWalletAddress,
-            "Not allowed"
-        );
-        priceBNBInDollars = _newPriceDollars;
-        emit PriceBNBChanged(_newPriceDollars);
-    }
-
-    /*
-    function to get how many BNB are _amountDollars amount
-    */
-    function getDollarsInBNB(uint256 _amountDollars)
-        external
-        view
-        returns (uint256)
-    {
-        return (_amountDollars * 1e18) / priceBNBInDollars;
-    }
-
-    /*
-    function to set CBURG and BNB price in dollars
-    */
-    function setCBURGAndBNBPriceInDollars(
-        uint256 _newPriceCBURG,
-        uint256 _newPriceBNB
-    ) external {
-        require(
-            msg.sender == owner() || msg.sender == backendOracleWalletAddress,
-            "Not allowed"
-        );
-        priceCBURGInDollars = _newPriceCBURG;
-        priceBNBInDollars = _newPriceBNB;
-        emit PriceCBURGAndBNBChanged(_newPriceCBURG, _newPriceBNB);
-    }
-
-    /*
-    function to change the address of backendOracleWalletAddress
-    */
-    function changebackendOracleWalletAddress(address _newAddress)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        backendOracleWalletAddress = _newAddress;
-        return true;
+        return (_amountInDollars * 1e18) / priceCBURGInDollars();
     }
 }
