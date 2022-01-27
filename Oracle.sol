@@ -31,7 +31,7 @@ contract Oracle is OwnableUpgradeable {
     */
     function priceCBURGInDollars() public view returns (uint256) {
         uint256[] memory amounts = IUniswapV2Router02(routerAddress)
-            .getAmountsOut(1000000000000000000000, path_BURG_BNB_BUSD);
+            .getAmountsOut(1000000000000000000, path_BURG_BNB_BUSD);
         return amounts[2];
     }
 
