@@ -1,9 +1,3 @@
-/*
-CRYPTOBURGERS
-Web: https://cryptoburgers.io
-Telegram: https://t.me/cryptoburgersnft
-*/
-
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -11,20 +5,17 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
-import "hardhat/console.sol";
 
 import "./Oracle.sol";
 
 contract Bridge is
     OwnableUpgradeable,
-    ERC20PausableUpgradeable,
+    PausableUpgradeable,
     ReentrancyGuardUpgradeable
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
-    using AddressUpgradeable for address;
 
     bool public isInitialized;
 
@@ -217,4 +208,3 @@ contract Bridge is
         _unpause();
     }
 }
-
