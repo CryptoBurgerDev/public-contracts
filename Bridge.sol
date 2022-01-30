@@ -23,7 +23,7 @@ contract Bridge is
     address public backendBridgeWalletAddress1;
     address public backendBridgeWalletAddress2;
     address public oracleContractAddress;
-    address public rewardsWallet;
+    address public playToEarnWalet;
     uint256 public nonce;
 
     event EventBSCToGameExecuted(
@@ -52,7 +52,7 @@ contract Bridge is
         address backendBridgeWalletAddress1_,
         address backendBridgeWalletAddress2_,
         address oracleContractAddress_,
-        address rewardsWallet_
+        address playToEarnWalet_
     ) public initializer {
         __Ownable_init();
         CBURGTokenAddress = CBURGTokenAddress_;
@@ -61,12 +61,12 @@ contract Bridge is
         backendBridgeWalletAddress2 = backendBridgeWalletAddress2_;
 
         oracleContractAddress = oracleContractAddress_;
-        rewardsWallet = rewardsWallet_;
+        playToEarnWalet = playToEarnWalet_;
         isInitialized = true;
     }
 
     /*
-    function to send tokens from msg.sender to rewardsWallet
+    function to send tokens from msg.sender to playToEarnWalet
     */
     function bridgeBSCToGame(uint256 _amountInCBURG)
         external
@@ -79,7 +79,7 @@ contract Bridge is
 
         IERC20Upgradeable(CBURGTokenAddress).safeTransferFrom(
             msg.sender,
-            rewardsWallet,
+            playToEarnWalet,
             _amountInCBURG
         );
 
@@ -97,7 +97,7 @@ contract Bridge is
     }
 
     /*
-    function to send tokens rewardsWallet to _walletOfUser
+    function to send tokens playToEarnWalet to _walletOfUser
     */
     function bridgeGameToBSC(
         address[] memory _walletOfUser,
@@ -117,7 +117,7 @@ contract Bridge is
             );
 
             IERC20Upgradeable(CBURGTokenAddress).safeTransferFrom(
-                rewardsWallet,
+                playToEarnWalet,
                 _walletOfUser[index],
                 _amountInCBURG
             );
@@ -185,12 +185,12 @@ contract Bridge is
     /*
     function to change rewards wallet address
     */
-    function changeRewardsWalletAddress(address _newAddress)
+    function changeplayToEarnWaletAddress(address _newAddress)
         external
         onlyOwner
         returns (bool)
     {
-        rewardsWallet = _newAddress;
+        playToEarnWalet = _newAddress;
         return true;
     }
 
